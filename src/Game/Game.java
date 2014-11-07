@@ -187,9 +187,6 @@ public class Game {
 	public List<Winner> getWinner() {
 		List<Winner> winners = new ArrayList<Winner>();
 
-		if (!player1.hasCollided && !player2.hasCollided)
-			return null;
-
 		if ((player1.hasCollided && player2.hasCollided)
 				|| numberOfSteps >= maxNumberOfSteps) {
 			if (player1.score == player2.score) {
