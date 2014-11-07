@@ -15,7 +15,7 @@ public class Game {
 											// with a single AI.
 	static Random random = new Random();
 
-	int maxNumberOfSteps = 100;
+	int maxNumberOfSteps = 1000;
 	int numberOfSteps = 0;
 	public boolean gameOver = false;
 
