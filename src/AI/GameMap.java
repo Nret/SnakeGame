@@ -89,7 +89,7 @@ public class GameMap {
 	 * @return true or false if the direction is safe.
 	 */
 	public boolean isSafe(Direction direction) {
-		SnakePart head = self.get(0);
+		SnakePart head = new SnakePart(self.get(0));
 
 		if (direction == Direction.UP)
 			head.y--;
