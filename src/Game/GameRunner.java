@@ -6,15 +6,15 @@ import java.util.concurrent.TimeUnit;
 
 import AI.BasicAI;
 
-public class GameRuner {
+public class GameRunner {
 
 	public static void main(String[] args) {
-		GameRuner gameRunner = new GameRuner();
+		GameRunner gameRunner = new GameRunner();
 	}
 
 	Game game;
 
-	public GameRuner() {
+	public GameRunner() {
 		game = new Game(11, 11);
 		Renderer renderer = new Renderer();
 

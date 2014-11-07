@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 import AI.BasicAI;
+import AI.DummyAI;
 import Game.Direction;
 import Game.Game;
 import Game.GameObject;
@@ -58,7 +59,7 @@ public class GUI extends JApplet {
 		renderer = new Renderer();
 
 		game.setPlayer1AI(new BasicAI(Direction.DOWN));
-		game.setPlayer2AI(new BasicAI(Direction.UP));
+		game.setPlayer2AI(new DummyAI());
 
 		txtrn.setText(renderer.renderAsText(game));
 	}
