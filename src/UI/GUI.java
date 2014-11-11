@@ -2,6 +2,7 @@ package UI;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -12,11 +13,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import AI.BasicAI;
-import AI.DummyAI;
-import Game.Direction;
+import AI.Zach.Seeker;
 import Game.Game;
-import Game.GameObject;
+import Game.Loser;
 import Game.Renderer;
 import Game.Winner;
 
@@ -50,16 +49,17 @@ public class GUI extends JApplet {
 		txtrn = new JTextArea();
 		panel_1.add(txtrn, BorderLayout.SOUTH);
 		txtrn.setEditable(false);
+		txtrn.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
 		setupGame();
 	}
 
 	private void setupGame() {
-		game = new Game(10, 10);
+		game = new Game(100,30);
 		renderer = new Renderer();
 
-		game.setPlayer1AI(new BasicAI(Direction.DOWN));
-		game.setPlayer2AI(new DummyAI());
+		game.setPlayer1AI(new Seeker(" 1"));
+		game.setPlayer2AI(new Seeker(" 2"));
 
 		txtrn.setText(renderer.renderAsText(game));
 	}
@@ -75,6 +75,7 @@ public class GUI extends JApplet {
 		 if (game.gameOver) {
 			 btnGamestep.setEnabled(false);
 			 txtrn.append(printWinners());
+			 txtrn.append(printLosers());
 		 }
 
 	}
@@ -86,11 +87,27 @@ public class GUI extends JApplet {
 		sb.append("Winner\n");
 		for (Winner winner : winners) {
 			sb.append("AI: " + winner.name + "\n");
+			sb.append("Direction: " + winner.direction + "\n");
 			sb.append("Score: " + winner.score + "\n");
 			sb.append("Written by: " + Arrays.toString(winner.authors) + "\n");
 		}
 		
 		return sb.toString();
 	}
+	
+	private String printLosers() {
+		List<Loser> losers = game.getLoser();
+		StringBuilder sb = new StringBuilder();
 
+		sb.append("Loser\n");
+		for (Loser loser : losers) {
+			sb.append("AI: " + loser.name + "\n");
+			sb.append("Direction: " + loser.direction + "\n");
+			sb.append("Score: " + loser.score + "\n");
+			sb.append("Written by: " + Arrays.toString(loser.authors) + "\n");
+		}
+		
+		return sb.toString();
+	}
+	
 }

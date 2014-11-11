@@ -26,7 +26,7 @@ public class Renderer {
 		map[game.player2.head.x][game.player2.head.y] = "2";
 		
 		for (SnakePart part : game.player2.parts)
-			map[part.x][part.y] = "x";
+			map[part.x][part.y] = "-";
 
 		StringBuilder out = new StringBuilder();
 		
