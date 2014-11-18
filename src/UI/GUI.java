@@ -65,14 +65,14 @@ public class GUI extends JApplet {
 	}
 
 	protected void gameStepped() {
-		if (!game.gameOver) {
+		if (!game.gameOver()) {
 			game.step();
-			if (!game.gameOver) {
+			if (!game.gameOver()) {
 				txtrn.setText(renderer.renderAsText(game));
 			}
 		}
 		
-		 if (game.gameOver) {
+		 if (game.gameOver()) {
 			 btnGamestep.setEnabled(false);
 			 txtrn.append(printWinners());
 			 txtrn.append(printLosers());

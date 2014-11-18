@@ -14,6 +14,10 @@ public class Seeker implements AI {
 		name += string;
 	}
 	
+	public Seeker() {
+		// TODO Auto-generated constructor stub
+	}
+
 	@Override
 	public String getName() {
 		return name;
