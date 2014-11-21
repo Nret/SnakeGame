@@ -5,6 +5,7 @@ import java.util.Arrays;
 import AI.Zach.Seeker;
 
 public class AIList {
+	// ADD YOUR AI TO THIS LIST
 	static public AI[] list = {
 		new DummyAI(), 
 		new Seeker()

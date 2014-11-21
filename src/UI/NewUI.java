@@ -1,12 +1,16 @@
 package UI;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
 
+import javax.print.attribute.standard.PrinterLocation;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -25,7 +29,14 @@ import javax.swing.border.EmptyBorder;
 import AI.AI;
 import AI.AIList;
 import Game.Game;
+import Game.Loser;
 import Game.Renderer;
+import Game.Winner;
+
+import javax.swing.JScrollPane;
+
+import java.awt.Component;
+import java.awt.Font;
 
 public class NewUI {
 
@@ -52,9 +63,14 @@ public class NewUI {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			stepGame();
-			
+
 		}
 	});
+	private JLabel steps_label;
+	private JSpinner spinner_maxsteps;
+	private JLabel player1_winner;
+	private JLabel player2_winner;
+	private JLabel speed_label;
 
 	/**
 	 * Launch the application.
@@ -87,7 +103,7 @@ public class NewUI {
 	private void initialize() {
 		frmSnakeGame = new JFrame();
 		frmSnakeGame.setTitle("Snake Game");
-		frmSnakeGame.setBounds(100, 100, 500, 300);
+		frmSnakeGame.setBounds(100, 100, 510, 320);
 		frmSnakeGame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel top_panel = new JPanel();
@@ -105,14 +121,25 @@ public class NewUI {
 			}
 		});
 
-		JLabel lblWidth = new JLabel("width");
-		beforegame_panel.add(lblWidth);
+		JLabel lblMaxStep = new JLabel("max step");
+		beforegame_panel.add(lblMaxStep);
+
+		spinner_maxsteps = new JSpinner();
+		spinner_maxsteps.setModel(new SpinnerNumberModel(new Integer(1000),
+				new Integer(1), null, new Integer(10)));
+		((JSpinner.DefaultEditor) spinner_maxsteps.getEditor()).getTextField()
+				.setColumns(3);
+		beforegame_panel.add(spinner_maxsteps);
 
 		spinner_gameWidth = new JSpinner();
 		spinner_gameWidth.setModel(new SpinnerNumberModel(new Integer(100),
-				new Integer(0), null, new Integer(1)));
+				new Integer(0), null, new Integer(10)));
 		((JSpinner.DefaultEditor) spinner_gameWidth.getEditor()).getTextField()
 				.setColumns(3);
+
+		JLabel lblWidth = new JLabel("width");
+		beforegame_panel.add(lblWidth);
+
 		beforegame_panel.add(spinner_gameWidth);
 
 		JLabel lblHeight = new JLabel("height");
@@ -120,7 +147,7 @@ public class NewUI {
 
 		spinner_gameHeight = new JSpinner();
 		spinner_gameHeight.setModel(new SpinnerNumberModel(new Integer(100),
-				new Integer(0), null, new Integer(1)));
+				new Integer(0), null, new Integer(10)));
 		((JSpinner.DefaultEditor) spinner_gameHeight.getEditor())
 				.getTextField().setColumns(3);
 		beforegame_panel.add(spinner_gameHeight);
@@ -141,7 +168,7 @@ public class NewUI {
 
 		JPanel player1_panel = new JPanel();
 		players_panel.add(player1_panel);
-		player1_panel.setLayout(new GridLayout(3, 1, 0, 0));
+		player1_panel.setLayout(new GridLayout(4, 1, 0, 0));
 
 		player1_comboBox = new JComboBox<String>(
 				new DefaultComboBoxModel<String>(AIList.asArray()));
@@ -154,10 +181,15 @@ public class NewUI {
 		player1_score = new JLabel("0");
 		player1_score.setHorizontalAlignment(SwingConstants.CENTER);
 		player1_panel.add(player1_score);
+		
+		player1_winner = new JLabel("");
+		player1_winner.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		player1_winner.setHorizontalAlignment(SwingConstants.CENTER);
+		player1_panel.add(player1_winner);
 
 		JPanel player2_panel = new JPanel();
 		players_panel.add(player2_panel);
-		player2_panel.setLayout(new GridLayout(3, 1, 0, 0));
+		player2_panel.setLayout(new GridLayout(4, 1, 0, 0));
 
 		player2_comboBox = new JComboBox<String>(
 				new DefaultComboBoxModel<String>(AIList.asArray()));
@@ -170,6 +202,11 @@ public class NewUI {
 		player2_score = new JLabel("0");
 		player2_score.setHorizontalAlignment(SwingConstants.CENTER);
 		player2_panel.add(player2_score);
+		
+		player2_winner = new JLabel("");
+		player2_winner.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		player2_winner.setHorizontalAlignment(SwingConstants.CENTER);
+		player2_panel.add(player2_winner);
 
 		JPanel game_panel = new JPanel();
 		frmSnakeGame.getContentPane().add(game_panel, BorderLayout.CENTER);
@@ -210,10 +247,17 @@ public class NewUI {
 				speedUpClicked(e);
 			}
 		});
+		
+		speed_label = new JLabel("100");
+		duringgame_panel.add(speed_label);
 		duringgame_panel.add(btnSpeedUp);
 
 		JPanel status_panel = new JPanel();
+		status_panel.setAlignmentY(Component.TOP_ALIGNMENT);
 		game_panel.add(status_panel);
+
+		steps_label = new JLabel("step: ");
+		status_panel.add(steps_label);
 
 		status = new JTextPane();
 		status.setEditable(false);
@@ -221,15 +265,14 @@ public class NewUI {
 		status_panel.add(status);
 
 		gamePlayArea = new JTextPane();
-		gamePlayArea.setText("GamePlayArea");
 		game_panel.add(gamePlayArea);
+		gamePlayArea.setEditable(false);
+		gamePlayArea.setText("GamePlayArea");
 	}
 
 	protected void autoStepClicked(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
 		if (chckbxAutoStep.isSelected()) {
-			timerDelay = initialTimerDelay ;
+			timerDelay = initialTimerDelay;
 			timer.setInitialDelay(timerDelay);
 			timer.setDelay(timerDelay);
 			timer.restart();
@@ -240,14 +283,18 @@ public class NewUI {
 	}
 
 	protected void speedUpClicked(ActionEvent e) {
-		timerDelay -= 350;
-		if (timerDelay < 0)
-			timerDelay = 100;
+		timerDelay -= 150;
+		if (timerDelay <= 0)
+			timerDelay = 10;
 		timer.setDelay(timerDelay);
 	}
 
 	protected void slowDownClicked(ActionEvent e) {
-		timerDelay += 350;
+		if (timerDelay == 10)
+			timerDelay = 0;
+		timerDelay += 150;
+		if (timerDelay > 1000)
+			timerDelay = 1000;
 		timer.setDelay(timerDelay);
 	}
 
@@ -256,24 +303,47 @@ public class NewUI {
 		timer.stop();
 		stepGame();
 	}
-	
+
 	protected void stepGame() {
 		if (!game.gameOver()) {
 			game.step();
 			renderGame();
 			updateScores();
+			updateSteps();
 		}
-		
-		if (game.gameOver()){
+
+		if (game.gameOver()) {
 			disableControlButtons();
+			setWinners();
 			timer.stop();
+//			status.setText(printWinners());
+//			status.setText(status.getText() + "\n" + printLosers());
 		}
+	}
+
+	private void updateSteps() {
+		int steps = game.getNumberOfSteps();
+		int maxSteps = game.getMaxNumberOfSteps();
+		int percent = steps * 100 / maxSteps;
+		steps_label.setText(percent + "%" + "  step: " + steps + " / "
+				+ maxSteps);
+
 	}
 
 	protected void updateScores() {
 		player1_score.setText("" + game.getPlayer1Score());
 		player2_score.setText("" + game.getPlayer2Score());
 
+	}
+	
+	protected void clearWinners() {
+		player1_winner.setText("");
+		player2_winner.setText("");
+	}
+	
+	protected void setWinners() {
+		player1_winner.setText((game.isPlayer1Winner()) ? "Winner" : "");
+		player2_winner.setText((game.isPlayer2Winner()) ? "Winner" : "");
 	}
 
 	protected void renderGameAsText() {
@@ -316,6 +386,7 @@ public class NewUI {
 		btnStep.setEnabled(false);
 		chckbxAutoStep.setSelected(false);
 		chckbxAutoStep.setEnabled(false);
+		timer.stop();
 	}
 
 	private void enableControlButtons() {
@@ -331,6 +402,7 @@ public class NewUI {
 		int height = (int) spinner_gameHeight.getValue();
 
 		game = new Game(width, height);
+		game.setMaxNumberOfSteps((int) spinner_maxsteps.getValue());
 
 		try {
 			AI player1AI = AIList.list[player1_comboBox.getSelectedIndex()]
@@ -346,11 +418,41 @@ public class NewUI {
 		}
 
 		updateScores();
+		clearWinners();
 		renderGame();
 	}
 
 	protected void renderGame() {
 		renderGameAsText();
-		
 	}
+//
+//	private String printWinners() {
+//		List<Winner> winners = game.getWinner();
+//		StringBuilder sb = new StringBuilder();
+//
+//		sb.append("Winner\n");
+//		for (Winner winner : winners) {
+//			sb.append("AI: " + winner.name + "\n");
+//			sb.append("Direction: " + winner.direction + "\n");
+//			sb.append("Score: " + winner.score + "\n");
+//			sb.append("Written by: " + Arrays.toString(winner.authors) + "\n");
+//		}
+//
+//		return sb.toString();
+//	}
+//
+//	private String printLosers() {
+//		List<Loser> losers = game.getLoser();
+//		StringBuilder sb = new StringBuilder();
+//
+//		sb.append("Loser\n");
+//		for (Loser loser : losers) {
+//			sb.append("AI: " + loser.name + "\n");
+//			sb.append("Direction: " + loser.direction + "\n");
+//			sb.append("Score: " + loser.score + "\n");
+//			sb.append("Written by: " + Arrays.toString(loser.authors) + "\n");
+//		}
+//
+//		return sb.toString();
+//	}
 }

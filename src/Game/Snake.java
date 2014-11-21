@@ -2,6 +2,7 @@ package Game;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class Snake {
 	List<SnakePart> parts = new LinkedList<SnakePart>();
