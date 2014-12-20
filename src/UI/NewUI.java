@@ -2,11 +2,19 @@ package UI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ContainerAdapter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,6 +67,7 @@ public class NewUI {
 
 	private int initialTimerDelay = 500;
 	private int timerDelay = initialTimerDelay;
+	private int timerStep = 50;
 	private Timer timer = new Timer(initialTimerDelay, new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -71,6 +80,7 @@ public class NewUI {
 	private JLabel player1_winner;
 	private JLabel player2_winner;
 	private JLabel speed_label;
+	private Renderer renderer;
 
 	/**
 	 * Launch the application.
@@ -181,9 +191,11 @@ public class NewUI {
 		player1_score = new JLabel("0");
 		player1_score.setHorizontalAlignment(SwingConstants.CENTER);
 		player1_panel.add(player1_score);
-		
+
 		player1_winner = new JLabel("");
+		player1_winner.setPreferredSize(new Dimension(100, 26));
 		player1_winner.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		player1_winner.setBackground(Color.RED);
 		player1_winner.setHorizontalAlignment(SwingConstants.CENTER);
 		player1_panel.add(player1_winner);
 
@@ -202,8 +214,9 @@ public class NewUI {
 		player2_score = new JLabel("0");
 		player2_score.setHorizontalAlignment(SwingConstants.CENTER);
 		player2_panel.add(player2_score);
-		
+
 		player2_winner = new JLabel("");
+		player2_winner.setPreferredSize(new Dimension(100, 26));
 		player2_winner.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		player2_winner.setHorizontalAlignment(SwingConstants.CENTER);
 		player2_panel.add(player2_winner);
@@ -247,8 +260,9 @@ public class NewUI {
 				speedUpClicked(e);
 			}
 		});
-		
-		speed_label = new JLabel("100");
+
+		speed_label = new JLabel("");
+		speed_label.setPreferredSize(new Dimension(30, 25));
 		duringgame_panel.add(speed_label);
 		duringgame_panel.add(btnSpeedUp);
 
@@ -264,10 +278,39 @@ public class NewUI {
 		status.setText("Status");
 		status_panel.add(status);
 
-		gamePlayArea = new JTextPane();
+		gamePlayArea = new JTextPane() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+
+				if (renderer == null)
+					return;
+
+				 Image renderedGame = renderer.render();
+				 int width = renderer.getImageWidth();
+				 int height = renderer.getImageHeight();
+				 
+				 g.drawImage(renderedGame, 0, 0, null);
+
+			}
+		};
+
+		gamePlayArea.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if (renderer == null)
+					return;
+
+				int width = gamePlayArea.getWidth();
+				int height = gamePlayArea.getHeight();
+				
+				renderer.resize(width, height);
+				gamePlayArea.repaint();
+			}
+		});
 		game_panel.add(gamePlayArea);
 		gamePlayArea.setEditable(false);
-		gamePlayArea.setText("GamePlayArea");
+		// gamePlayArea.setText("GamePlayArea");
 	}
 
 	protected void autoStepClicked(ActionEvent e) {
@@ -277,30 +320,41 @@ public class NewUI {
 			timer.setDelay(timerDelay);
 			timer.restart();
 			timer.start();
+			speed_label.setText("" + timerDelay);
+			btnSpeedUp.setEnabled(true);
+			btnSlowDown.setEnabled(true);
 		} else {
 			timer.stop();
+			speed_label.setText("");
+			btnSpeedUp.setEnabled(false);
+			btnSlowDown.setEnabled(false);
 		}
 	}
 
 	protected void speedUpClicked(ActionEvent e) {
-		timerDelay -= 150;
+		timerDelay -= timerStep;
 		if (timerDelay <= 0)
 			timerDelay = 10;
 		timer.setDelay(timerDelay);
+		speed_label.setText("" + timerDelay);
 	}
 
 	protected void slowDownClicked(ActionEvent e) {
 		if (timerDelay == 10)
 			timerDelay = 0;
-		timerDelay += 150;
+		timerDelay += timerStep;
 		if (timerDelay > 1000)
 			timerDelay = 1000;
 		timer.setDelay(timerDelay);
+		speed_label.setText("" + timerDelay);
 	}
 
 	protected void stepClicked(ActionEvent e) {
 		chckbxAutoStep.setSelected(false);
 		timer.stop();
+		speed_label.setText("");
+		btnSpeedUp.setEnabled(false);
+		btnSlowDown.setEnabled(false);
 		stepGame();
 	}
 
@@ -316,8 +370,8 @@ public class NewUI {
 			disableControlButtons();
 			setWinners();
 			timer.stop();
-//			status.setText(printWinners());
-//			status.setText(status.getText() + "\n" + printLosers());
+			// status.setText(printWinners());
+			// status.setText(status.getText() + "\n" + printLosers());
 		}
 	}
 
@@ -335,12 +389,12 @@ public class NewUI {
 		player2_score.setText("" + game.getPlayer2Score());
 
 	}
-	
+
 	protected void clearWinners() {
 		player1_winner.setText("");
 		player2_winner.setText("");
 	}
-	
+
 	protected void setWinners() {
 		player1_winner.setText((game.isPlayer1Winner()) ? "Winner" : "");
 		player2_winner.setText((game.isPlayer2Winner()) ? "Winner" : "");
@@ -358,6 +412,8 @@ public class NewUI {
 		btnStop.setEnabled(false);
 		spinner_gameHeight.setEnabled(true);
 		spinner_gameWidth.setEnabled(true);
+		spinner_maxsteps.setEnabled(true);
+		speed_label.setText("");
 	}
 
 	protected void startGameClicked(ActionEvent e) {
@@ -367,6 +423,8 @@ public class NewUI {
 		btnStop.setEnabled(true);
 		spinner_gameHeight.setEnabled(false);
 		spinner_gameWidth.setEnabled(false);
+		spinner_maxsteps.setEnabled(false);
+		speed_label.setText("");
 		configureGame();
 	}
 
@@ -390,8 +448,8 @@ public class NewUI {
 	}
 
 	private void enableControlButtons() {
-		btnSpeedUp.setEnabled(true);
-		btnSlowDown.setEnabled(true);
+		// btnSpeedUp.setEnabled(true);
+		// btnSlowDown.setEnabled(true);
 		btnStep.setEnabled(true);
 		chckbxAutoStep.setSelected(false);
 		chckbxAutoStep.setEnabled(true);
@@ -400,8 +458,12 @@ public class NewUI {
 	private void configureGame() {
 		int width = (int) spinner_gameWidth.getValue();
 		int height = (int) spinner_gameHeight.getValue();
+		
+		Dimension maxDimensions = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension currentDimension = new Dimension(gamePlayArea.getWidth(), gamePlayArea.getHeight());
 
 		game = new Game(width, height);
+		renderer = new Renderer(game, currentDimension, maxDimensions);
 		game.setMaxNumberOfSteps((int) spinner_maxsteps.getValue());
 
 		try {
@@ -418,41 +480,17 @@ public class NewUI {
 		}
 
 		updateScores();
+		updateSteps();
 		clearWinners();
 		renderGame();
 	}
 
 	protected void renderGame() {
-		renderGameAsText();
+		// renderGameAsText();
+		renderGameAsImage();
 	}
-//
-//	private String printWinners() {
-//		List<Winner> winners = game.getWinner();
-//		StringBuilder sb = new StringBuilder();
-//
-//		sb.append("Winner\n");
-//		for (Winner winner : winners) {
-//			sb.append("AI: " + winner.name + "\n");
-//			sb.append("Direction: " + winner.direction + "\n");
-//			sb.append("Score: " + winner.score + "\n");
-//			sb.append("Written by: " + Arrays.toString(winner.authors) + "\n");
-//		}
-//
-//		return sb.toString();
-//	}
-//
-//	private String printLosers() {
-//		List<Loser> losers = game.getLoser();
-//		StringBuilder sb = new StringBuilder();
-//
-//		sb.append("Loser\n");
-//		for (Loser loser : losers) {
-//			sb.append("AI: " + loser.name + "\n");
-//			sb.append("Direction: " + loser.direction + "\n");
-//			sb.append("Score: " + loser.score + "\n");
-//			sb.append("Written by: " + Arrays.toString(loser.authors) + "\n");
-//		}
-//
-//		return sb.toString();
-//	}
+
+	private void renderGameAsImage() {
+		gamePlayArea.repaint();
+	}
 }
